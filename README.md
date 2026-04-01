@@ -1,39 +1,157 @@
-# Welcome to your Expo app 👋
+# Imperial Engenharia 🏗️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo mobile da Imperial Engenharia construído com [Expo](https://expo.dev) e React Native.
 
-## Get started
+## 📋 Pré-requisitos
 
-1. Install dependencies
+Antes de começar, verifique se você tem instalado:
 
-   ```bash
-   npm install
-   ```
+- **Node.js** (versão 16.0.0 ou superior) - [Download aqui](https://nodejs.org/)
+- **npm** (normalmente instalado com Node.js)
+- **Git** - [Download aqui](https://git-scm.com/)
 
-2. Start the app
+Para testar em dispositivos móveis, você também precisará:
 
-   ```bash
-   npx expo start
-   ```
+- **Expo Go** - Aplicativo disponível na [App Store (iOS)](https://apps.apple.com/app/expo-go/id982107779) ou [Play Store (Android)](https://play.google.com/store/apps/details?id=host.exp.exponent)
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🚀 Como Rodar o Projeto
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### 1️⃣ Clonar o Repositório
 
 ```bash
-npm run reset-project
+git clone <URL_DO_REPOSITORIO>
+cd ImperialEngenharia
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2️⃣ Instalar Dependências
+
+```bash
+npm install
+```
+
+Este comando irá instalar todas as dependências necessárias listadas no `package.json`.
+
+### 3️⃣ Iniciar o Servidor de Desenvolvimento
+
+```bash
+npx expo start
+```
+
+Após executar este comando, você verá no terminal um código QR e várias opções:
+
+```
+› Metro waiting on exp://192.168.x.x:8081
+› Scan the QR code above with Expo Go (Android) or the Camera app (iOS)
+›
+› Press s │ switch to development build
+› Press a │ open Android
+› Press i │ open iOS simulator
+› Press w │ open web
+```
+
+### 4️⃣ Escolha Como Rodar
+
+Você tem as seguintes opções:
+
+#### **Opção 1: No seu Smartphone (Recomendado)**
+
+- **Android**: Abra o aplicativo **Expo Go** e escaneie o código QR
+- **iOS**: Abra a câmera padrão, aponte para o código QR e clique no aviso do Expo Go
+
+#### **Opção 2: Emulador Android**
+
+Pressione `a` no terminal (requer Android Studio instalado)
+
+```bash
+a
+```
+
+#### **Opção 3: Simulador iOS**
+
+Pressione `i` no terminal (apenas em macOS com Xcode instalado)
+
+```bash
+i
+```
+
+#### **Opção 4: Browser Web**
+
+Pressione `w` no terminal
+
+```bash
+w
+```
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+ImperialEngenharia/
+├── assets/              # Imagens e ícones
+│   └── images/         # Logo e imagens da aplicação
+├── components/         # Componentes reutilizáveis
+├── pages/             # Telas da aplicação
+├── constants/         # Constantes (cores, etc)
+├── routes/            # Configuração de rotas
+├── App.js             # Arquivo principal
+├── package.json       # Dependências do projeto
+└── README.md          # Este arquivo
+```
+
+---
+
+## 🛠️ Comandos Disponíveis
+
+- **`npm install`** - Instala as dependências do projeto
+- **`npm start`** ou **`npx expo start`** - Inicia o servidor de desenvolvimento
+- **`npm run reset-project`** - Reseta o projeto para o estado inicial
+
+---
+
+## 🔧 Troubleshooting
+
+### ❌ Erro: "expo command not found"
+
+Instale o Expo CLI globalmente:
+
+```bash
+npm install -g expo-cli
+```
+
+### ❌ Erro: "Cannot find module"
+
+Limpe o cache e reinstale as dependências:
+
+```bash
+npm install --force
+```
+
+### ❌ Porta 8081 já em uso
+
+Mude a porta usando:
+
+```bash
+npx expo start --port 8082
+```
+
+### ❌ QR Code não funciona
+
+1. Verifique se seu smartphone está na **mesma rede WiFi** do computador
+2. Feche o Expo Go completamente e abra novamente
+3. Tente reconectar ao servidor
+
+---
+
+## 📚 Recursos Úteis
+
+- [Documentação Expo](https://docs.expo.dev/) - Guias e tutoriais
+- [React Native Docs](https://reactnative.dev/) - Documentação do React Native
+- [Ionicons](https://ionic.io/ionicons) - Ícones utilizados no projeto
+
+---
 
 ## Learn more
 
