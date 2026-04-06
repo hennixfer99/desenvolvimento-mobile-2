@@ -2,7 +2,7 @@
 
 Aplicativo mobile da Imperial Engenharia construído com [Expo](https://expo.dev) e React Native.
 
-## 📋 Pré-requisitos
+## Pré-requisitos
 
 Antes de começar, verifique se você tem instalado:
 
