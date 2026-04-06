@@ -1,4 +1,4 @@
-# Imperial Engenharia 🏗️
+# Imperial Engenharia
 
 Aplicativo mobile da Imperial Engenharia construído com [Expo](https://expo.dev) e React Native.
 
@@ -16,16 +16,16 @@ Para testar em dispositivos móveis, você também precisará:
 
 ---
 
-## 🚀 Como Rodar o Projeto
+## Como Rodar o Projeto
 
-### 1️⃣ Clonar o Repositório
+### Clonar o Repositório
 
 ```bash
 git clone <URL_DO_REPOSITORIO>
 cd ImperialEngenharia
 ```
 
-### 2️⃣ Instalar Dependências
+### Instalar Dependências
 
 ```bash
 npm install
@@ -33,7 +33,7 @@ npm install
 
 Este comando irá instalar todas as dependências necessárias listadas no `package.json`.
 
-### 3️⃣ Iniciar o Servidor de Desenvolvimento
+### Iniciar o Servidor de Desenvolvimento
 
 ```bash
 npx expo start
@@ -51,7 +51,7 @@ Após executar este comando, você verá no terminal um código QR e várias op�
 › Press w │ open web
 ```
 
-### 4️⃣ Escolha Como Rodar
+### Escolha Como Rodar
 
 Você tem as seguintes opções:
 
@@ -103,7 +103,7 @@ ImperialEngenharia/
 
 ---
 
-## 🛠️ Comandos Disponíveis
+## Comandos Disponíveis
 
 - **`npm install`** - Instala as dependências do projeto
 - **`npm start`** ou **`npx expo start`** - Inicia o servidor de desenvolvimento
@@ -111,9 +111,9 @@ ImperialEngenharia/
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
-### ❌ Erro: "expo command not found"
+### Erro: "expo command not found"
 
 Instale o Expo CLI globalmente:
 
@@ -121,7 +121,7 @@ Instale o Expo CLI globalmente:
 npm install -g expo-cli
 ```
 
-### ❌ Erro: "Cannot find module"
+### Erro: "Cannot find module"
 
 Limpe o cache e reinstale as dependências:
 
@@ -129,7 +129,7 @@ Limpe o cache e reinstale as dependências:
 npm install --force
 ```
 
-### ❌ Porta 8081 já em uso
+### Porta 8081 já em uso
 
 Mude a porta usando:
 
@@ -137,7 +137,7 @@ Mude a porta usando:
 npx expo start --port 8082
 ```
 
-### ❌ QR Code não funciona
+### QR Code não funciona
 
 1. Verifique se seu smartphone está na **mesma rede WiFi** do computador
 2. Feche o Expo Go completamente e abra novamente
@@ -145,24 +145,10 @@ npx expo start --port 8082
 
 ---
 
-## 📚 Recursos Úteis
+## Recursos Úteis
 
 - [Documentação Expo](https://docs.expo.dev/) - Guias e tutoriais
 - [React Native Docs](https://reactnative.dev/) - Documentação do React Native
 - [Ionicons](https://ionic.io/ionicons) - Ícones utilizados no projeto
 
 ---
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
