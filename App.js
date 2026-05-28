@@ -5,17 +5,23 @@ import {
     Dimensions,
     Image,
     SafeAreaView,
+    ScrollView,
     StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
 } from "react-native";
+import Footer from "./components/Footer";
 import imperialLogo from "./assets/images/logo-imperial.png";
 import { GlobalColors } from "./constants/colors";
+import InspecoesDetailScreen from "./pages/InspecoesDetailScreen";
+import ManutencaoDetailScreen from "./pages/ManutencaoDetailScreen";
+import ProjetosDetailScreen from "./pages/ProjetosDetailScreen";
+import TreinamentosDetailScreen from "./pages/TreinamentosDetailScreen";
 import Routes from "./routes";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 const DRAWER_WIDTH = width * 0.7;
 
 const MENU_ITEMS = [
@@ -33,12 +39,21 @@ const MENU_ITEMS = [
     { key: "Contato", label: "Contato", icon: "call-outline" },
 ];
 
+const DETAIL_PAGES = {
+    Inspecoes: { component: InspecoesDetailScreen, title: "Inspeções e Vistorias" },
+    Projetos: { component: ProjetosDetailScreen, title: "Projetos" },
+    Manutencao: { component: ManutencaoDetailScreen, title: "Manutenção" },
+    Treinamentos: { component: TreinamentosDetailScreen, title: "Treinamentos e Gestão" },
+};
+
 export default function App() {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
+    const [detailPage, setDetailPage] = useState(null);
     const drawerAnim = useRef(new Animated.Value(DRAWER_WIDTH)).current;
     const scrollRef = useRef(null);
     const sectionPositions = useRef({});
+    const savedScrollY = useRef(0);
 
     const openDrawer = () => {
         setDrawerVisible(true);
@@ -74,13 +89,82 @@ export default function App() {
     };
 
     const scrollToSection = (key) => {
-        if (sectionPositions.current[key] !== undefined) {
-            scrollRef.current?.scrollTo({
-                y: sectionPositions.current[key],
-                animated: true,
-            });
+        if (detailPage) {
+            setDetailPage(null);
+            setTimeout(() => {
+                if (sectionPositions.current[key] !== undefined) {
+                    scrollRef.current?.scrollTo({
+                        y: sectionPositions.current[key],
+                        animated: true,
+                    });
+                }
+            }, 100);
+        } else {
+            if (sectionPositions.current[key] !== undefined) {
+                scrollRef.current?.scrollTo({
+                    y: sectionPositions.current[key],
+                    animated: true,
+                });
+            }
         }
         if (drawerOpen) closeDrawer();
+    };
+
+    const navigateToDetail = (pageKey) => {
+        setDetailPage(pageKey);
+    };
+
+    const goBack = () => {
+        setDetailPage(null);
+        setTimeout(() => {
+            scrollRef.current?.scrollTo({
+                y: savedScrollY.current,
+                animated: false,
+            });
+        }, 50);
+    };
+
+    const handleScroll = (e) => {
+        savedScrollY.current = e.nativeEvent.contentOffset.y;
+    };
+
+    const renderDetailPage = () => {
+        const page = DETAIL_PAGES[detailPage];
+        if (!page) return null;
+        const DetailComponent = page.component;
+        return (
+            <View style={s.detailContainer}>
+                <View style={s.detailHeader}>
+                    <TouchableOpacity onPress={goBack} style={s.headerSideButton}>
+                        <Ionicons
+                            name="arrow-back"
+                            size={24}
+                            color={GlobalColors.WHITE}
+                        />
+                    </TouchableOpacity>
+                    <Text style={s.detailHeaderTitle} numberOfLines={1}>
+                        {page.title}
+                    </Text>
+                    <TouchableOpacity onPress={toggleDrawer} style={s.headerSideButton}>
+                        <Ionicons
+                            name="menu"
+                            size={24}
+                            color={GlobalColors.WHITE}
+                        />
+                    </TouchableOpacity>
+                </View>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    style={s.detailScroll}
+                    contentContainerStyle={s.detailScrollContent}
+                >
+                    <View>
+                        <DetailComponent />
+                    </View>
+                    <Footer />
+                </ScrollView>
+            </View>
+        );
     };
 
     return (
@@ -91,76 +175,84 @@ export default function App() {
                     backgroundColor={GlobalColors.PRIMARY_DARK}
                 />
 
-                <View style={s.header}>
-                    <View style={s.headerLogo}>
-                        <Image
-                            source={imperialLogo}
-                            style={s.logoImage}
-                            resizeMode="contain"
+                {detailPage ? (
+                    renderDetailPage()
+                ) : (
+                    <>
+                        <View style={s.header}>
+                            <View style={s.headerLogo}>
+                                <Image
+                                    source={imperialLogo}
+                                    style={s.logoImage}
+                                    resizeMode="contain"
+                                />
+                            </View>
+                            <View style={s.headerSpacer} />
+                            <TouchableOpacity
+                                onPress={toggleDrawer}
+                                style={s.menuButton}
+                            >
+                                <Ionicons
+                                    name="menu"
+                                    size={28}
+                                    color={GlobalColors.WHITE}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <Routes
+                            scrollRef={scrollRef}
+                            onSectionLayout={registerSection}
+                            scrollToSection={scrollToSection}
+                            navigateToDetail={navigateToDetail}
+                            onScroll={handleScroll}
                         />
-                    </View>
-                    <View style={s.headerSpacer} />
-                    <TouchableOpacity
-                        onPress={toggleDrawer}
-                        style={s.menuButton}
-                    >
-                        <Ionicons
-                            name="menu"
-                            size={28}
-                            color={GlobalColors.WHITE}
-                        />
-                    </TouchableOpacity>
-                </View>
-
-                <Routes
-                    scrollRef={scrollRef}
-                    onSectionLayout={registerSection}
-                    scrollToSection={scrollToSection}
-                />
+                    </>
+                )}
             </SafeAreaView>
 
             {drawerVisible && (
-                <TouchableOpacity
-                    style={s.overlay}
-                    activeOpacity={1}
-                    onPress={closeDrawer}
-                />
-            )}
-
-            {drawerVisible && (
-                <Animated.View
-                    style={[
-                        s.drawer,
-                        { transform: [{ translateX: drawerAnim }] },
-                    ]}
-                >
-                    <View style={s.drawerHeader}>
-                        <Text style={s.drawerTitle}>
-                            IMPERIAL{"\n"}ENGENHARIA
-                        </Text>
-                        <TouchableOpacity onPress={closeDrawer}>
-                            <Ionicons
-                                name="close"
-                                size={24}
-                                color={GlobalColors.WHITE}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    {MENU_ITEMS.map((item) => (
-                        <TouchableOpacity
-                            key={item.key}
-                            style={s.drawerItem}
-                            onPress={() => scrollToSection(item.key)}
-                        >
-                            <Ionicons
-                                name={item.icon}
-                                size={20}
-                                color={GlobalColors.WHITE}
-                            />
-                            <Text style={s.drawerItemText}>{item.label}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </Animated.View>
+                <View style={s.drawerContainer}>
+                    <TouchableOpacity
+                        style={s.overlay}
+                        activeOpacity={1}
+                        onPress={closeDrawer}
+                    />
+                    <Animated.View
+                        style={[
+                            s.drawer,
+                            { transform: [{ translateX: drawerAnim }] },
+                        ]}
+                    >
+                        <View style={s.drawerHeader}>
+                            <Text style={s.drawerTitle}>
+                                IMPERIAL{"\n"}ENGENHARIA
+                            </Text>
+                            <TouchableOpacity onPress={closeDrawer}>
+                                <Ionicons
+                                    name="close"
+                                    size={24}
+                                    color={GlobalColors.WHITE}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        {MENU_ITEMS.map((item) => (
+                            <TouchableOpacity
+                                key={item.key}
+                                style={s.drawerItem}
+                                onPress={() => scrollToSection(item.key)}
+                            >
+                                <Ionicons
+                                    name={item.icon}
+                                    size={20}
+                                    color={GlobalColors.WHITE}
+                                />
+                                <Text style={s.drawerItemText}>
+                                    {item.label}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </Animated.View>
+                </View>
             )}
         </View>
     );
@@ -169,6 +261,15 @@ export default function App() {
 const s = StyleSheet.create({
     rootContainer: {
         flex: 1,
+        overflow: "hidden",
+    },
+    drawerContainer: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 5,
         overflow: "hidden",
     },
     container: {
@@ -195,6 +296,37 @@ const s = StyleSheet.create({
     },
     menuButton: {
         padding: 5,
+    },
+    detailContainer: {
+        flex: 1,
+        backgroundColor: GlobalColors.BACKGROUND,
+    },
+    detailHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: GlobalColors.PRIMARY_DARK,
+        paddingHorizontal: 10,
+        paddingVertical: 12,
+    },
+    headerSideButton: {
+        width: 40,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    detailHeaderTitle: {
+        flex: 1,
+        fontSize: 17,
+        fontWeight: "bold",
+        color: GlobalColors.WHITE,
+        textAlign: "center",
+    },
+    detailScroll: {
+        flex: 1,
+        backgroundColor: GlobalColors.BACKGROUND,
+    },
+    detailScrollContent: {
+        flexGrow: 1,
+        justifyContent: "space-between",
     },
     overlay: {
         position: "absolute",

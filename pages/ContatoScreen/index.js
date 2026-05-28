@@ -87,7 +87,10 @@ export default function ContatoScreen() {
                     <Text style={s.inputLabel}>Tipo de Serviço</Text>
                     <View style={s.selectWrapper}>
                         <TouchableOpacity
-                            style={[s.selectButton, selectOpen && s.selectButtonOpen]}
+                            style={[
+                                s.selectButton,
+                                selectOpen && s.selectButtonOpen,
+                            ]}
                             onPress={() => setSelectOpen(!selectOpen)}
                         >
                             <Text
@@ -99,7 +102,9 @@ export default function ContatoScreen() {
                                 {SERVICE_OPTIONS[servicoIndex]}
                             </Text>
                             <Ionicons
-                                name={selectOpen ? "chevron-up" : "chevron-down"}
+                                name={
+                                    selectOpen ? "chevron-up" : "chevron-down"
+                                }
                                 size={20}
                                 color={GlobalColors.TEXT_MEDIUM}
                             />
@@ -111,7 +116,8 @@ export default function ContatoScreen() {
                                         key={index}
                                         style={[
                                             s.dropdownOption,
-                                            servicoIndex === index + 1 && s.dropdownOptionActive,
+                                            servicoIndex === index + 1 &&
+                                                s.dropdownOptionActive,
                                         ]}
                                         onPress={() => {
                                             setServicoIndex(index + 1);
@@ -121,13 +127,18 @@ export default function ContatoScreen() {
                                         <Text
                                             style={[
                                                 s.dropdownOptionText,
-                                                servicoIndex === index + 1 && s.dropdownOptionTextActive,
+                                                servicoIndex === index + 1 &&
+                                                    s.dropdownOptionTextActive,
                                             ]}
                                         >
                                             {item}
                                         </Text>
                                         {servicoIndex === index + 1 && (
-                                            <Ionicons name="checkmark" size={18} color={GlobalColors.PRIMARY} />
+                                            <Ionicons
+                                                name="checkmark"
+                                                size={18}
+                                                color={GlobalColors.PRIMARY}
+                                            />
                                         )}
                                     </TouchableOpacity>
                                 ))}

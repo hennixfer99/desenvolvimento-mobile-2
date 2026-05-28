@@ -22,7 +22,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: GlobalColors.BORDER,
         minHeight: 200,
-        maxWidth: 400,
     },
     greenBar: {
         width: 5,
