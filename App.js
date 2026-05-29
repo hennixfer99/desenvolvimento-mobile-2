@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     Animated,
     Dimensions,
@@ -15,22 +15,21 @@ import {
 import Footer from "./components/Footer";
 import imperialLogo from "./assets/images/logo-imperial.png";
 import { GlobalColors } from "./constants/colors";
+import AdminScreen from "./pages/AdminScreen";
 import InspecoesDetailScreen from "./pages/InspecoesDetailScreen";
+import LoginScreen from "./pages/LoginScreen";
 import ManutencaoDetailScreen from "./pages/ManutencaoDetailScreen";
 import ProjetosDetailScreen from "./pages/ProjetosDetailScreen";
 import TreinamentosDetailScreen from "./pages/TreinamentosDetailScreen";
 import Routes from "./routes";
+import { getSession, initApi, logout } from "./services/fakeApi";
 
 const { width } = Dimensions.get("window");
 const DRAWER_WIDTH = width * 0.7;
 
 const MENU_ITEMS = [
     { key: "Home", label: "Início", icon: "home-outline" },
-    {
-        key: "QuemSomos",
-        label: "Quem Somos",
-        icon: "information-circle-outline",
-    },
+    { key: "QuemSomos", label: "Quem Somos", icon: "information-circle-outline" },
     { key: "Solucoes", label: "Soluções", icon: "bulb-outline" },
     { key: "Servicos", label: "Serviços", icon: "construct-outline" },
     { key: "Principios", label: "Princípios", icon: "flag-outline" },
@@ -50,10 +49,23 @@ export default function App() {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [detailPage, setDetailPage] = useState(null);
+    const [adminUser, setAdminUser] = useState(null);
+    const [showLogin, setShowLogin] = useState(false);
+    const [showAdmin, setShowAdmin] = useState(false);
+    const [servicosOpen, setServicosOpen] = useState(false);
     const drawerAnim = useRef(new Animated.Value(DRAWER_WIDTH)).current;
     const scrollRef = useRef(null);
     const sectionPositions = useRef({});
     const savedScrollY = useRef(0);
+
+    useEffect(() => {
+        const init = async () => {
+            await initApi();
+            const session = await getSession();
+            if (session) setAdminUser(session);
+        };
+        init();
+    }, []);
 
     const openDrawer = () => {
         setDrawerVisible(true);
@@ -89,23 +101,11 @@ export default function App() {
     };
 
     const scrollToSection = (key) => {
-        if (detailPage) {
-            setDetailPage(null);
-            setTimeout(() => {
-                if (sectionPositions.current[key] !== undefined) {
-                    scrollRef.current?.scrollTo({
-                        y: sectionPositions.current[key],
-                        animated: true,
-                    });
-                }
-            }, 100);
-        } else {
-            if (sectionPositions.current[key] !== undefined) {
-                scrollRef.current?.scrollTo({
-                    y: sectionPositions.current[key],
-                    animated: true,
-                });
-            }
+        if (sectionPositions.current[key] !== undefined) {
+            scrollRef.current?.scrollTo({
+                y: sectionPositions.current[key],
+                animated: true,
+            });
         }
         if (drawerOpen) closeDrawer();
     };
@@ -128,44 +128,36 @@ export default function App() {
         savedScrollY.current = e.nativeEvent.contentOffset.y;
     };
 
-    const renderDetailPage = () => {
-        const page = DETAIL_PAGES[detailPage];
-        if (!page) return null;
-        const DetailComponent = page.component;
-        return (
-            <View style={s.detailContainer}>
-                <View style={s.detailHeader}>
-                    <TouchableOpacity onPress={goBack} style={s.headerSideButton}>
-                        <Ionicons
-                            name="arrow-back"
-                            size={24}
-                            color={GlobalColors.WHITE}
-                        />
-                    </TouchableOpacity>
-                    <Text style={s.detailHeaderTitle} numberOfLines={1}>
-                        {page.title}
-                    </Text>
-                    <TouchableOpacity onPress={toggleDrawer} style={s.headerSideButton}>
-                        <Ionicons
-                            name="menu"
-                            size={24}
-                            color={GlobalColors.WHITE}
-                        />
-                    </TouchableOpacity>
-                </View>
-                <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    style={s.detailScroll}
-                    contentContainerStyle={s.detailScrollContent}
-                >
-                    <View>
-                        <DetailComponent />
-                    </View>
-                    <Footer />
-                </ScrollView>
-            </View>
-        );
+    const handleAdminPress = () => {
+        closeDrawer();
+        setTimeout(() => {
+            if (adminUser) {
+                setShowAdmin(true);
+            } else {
+                setShowLogin(true);
+            }
+        }, 300);
     };
+
+    const handleLoginSuccess = (user) => {
+        setAdminUser(user);
+        setShowLogin(false);
+        setShowAdmin(true);
+    };
+
+    const handleLogout = async () => {
+        await logout();
+        setAdminUser(null);
+        setShowAdmin(false);
+    };
+
+    const goBackFromAdmin = () => {
+        setShowAdmin(false);
+        setShowLogin(false);
+    };
+
+    const isMainView = !detailPage && !showLogin && !showAdmin;
+    const isDetailView = detailPage && !showLogin && !showAdmin;
 
     return (
         <View style={s.rootContainer}>
@@ -175,8 +167,55 @@ export default function App() {
                     backgroundColor={GlobalColors.PRIMARY_DARK}
                 />
 
-                {detailPage ? (
-                    renderDetailPage()
+                {showLogin ? (
+                    <View style={s.detailContainer}>
+                        <View style={s.detailHeader}>
+                            <TouchableOpacity onPress={goBackFromAdmin} style={s.headerSideButton}>
+                                <Ionicons name="arrow-back" size={24} color={GlobalColors.WHITE} />
+                            </TouchableOpacity>
+                            <Text style={s.detailHeaderTitle}>Login</Text>
+                            <View style={s.headerSideButton} />
+                        </View>
+                        <LoginScreen onLoginSuccess={handleLoginSuccess} />
+                    </View>
+                ) : showAdmin ? (
+                    <View style={s.detailContainer}>
+                        <View style={s.detailHeader}>
+                            <TouchableOpacity onPress={goBackFromAdmin} style={s.headerSideButton}>
+                                <Ionicons name="arrow-back" size={24} color={GlobalColors.WHITE} />
+                            </TouchableOpacity>
+                            <Text style={s.detailHeaderTitle}>Painel Admin</Text>
+                            <View style={s.headerSideButton} />
+                        </View>
+                        <AdminScreen user={adminUser} onLogout={handleLogout} />
+                    </View>
+                ) : isDetailView ? (
+                    <View style={s.detailContainer}>
+                        <View style={s.detailHeader}>
+                            <TouchableOpacity onPress={goBack} style={s.headerSideButton}>
+                                <Ionicons name="arrow-back" size={24} color={GlobalColors.WHITE} />
+                            </TouchableOpacity>
+                            <Text style={s.detailHeaderTitle} numberOfLines={1}>
+                                {DETAIL_PAGES[detailPage].title}
+                            </Text>
+                            <TouchableOpacity onPress={toggleDrawer} style={s.headerSideButton}>
+                                <Ionicons name="menu" size={24} color={GlobalColors.WHITE} />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            style={s.detailScroll}
+                            contentContainerStyle={s.detailScrollContent}
+                        >
+                            <View>
+                                {detailPage === "Inspecoes" && <InspecoesDetailScreen />}
+                                {detailPage === "Projetos" && <ProjetosDetailScreen />}
+                                {detailPage === "Manutencao" && <ManutencaoDetailScreen />}
+                                {detailPage === "Treinamentos" && <TreinamentosDetailScreen />}
+                            </View>
+                            <Footer />
+                        </ScrollView>
+                    </View>
                 ) : (
                     <>
                         <View style={s.header}>
@@ -235,22 +274,79 @@ export default function App() {
                                 />
                             </TouchableOpacity>
                         </View>
-                        {MENU_ITEMS.map((item) => (
+                        {MENU_ITEMS.map((item) =>
+                            item.key === "Servicos" ? (
+                                <View key={item.key}>
+                                    <TouchableOpacity
+                                        style={s.drawerItem}
+                                        onPress={() => setServicosOpen(!servicosOpen)}
+                                    >
+                                        <Ionicons name={item.icon} size={20} color={GlobalColors.WHITE} />
+                                        <Text style={[s.drawerItemText, { flex: 1 }]}>{item.label}</Text>
+                                        <Ionicons
+                                            name={servicosOpen ? "chevron-up" : "chevron-down"}
+                                            size={16}
+                                            color="rgba(255,255,255,0.5)"
+                                        />
+                                    </TouchableOpacity>
+                                    {servicosOpen && (
+                                        <View style={s.subMenu}>
+                                            {Object.entries(DETAIL_PAGES).map(([key, page]) => (
+                                                <TouchableOpacity
+                                                    key={key}
+                                                    style={s.subMenuItem}
+                                                    onPress={() => {
+                                                        closeDrawer();
+                                                        setServicosOpen(false);
+                                                        setTimeout(() => navigateToDetail(key), 300);
+                                                    }}
+                                                >
+                                                    <View style={s.subMenuDot} />
+                                                    <Text style={s.subMenuText}>{page.title}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    )}
+                                </View>
+                            ) : (
+                                <TouchableOpacity
+                                    key={item.key}
+                                    style={s.drawerItem}
+                                    onPress={() => scrollToSection(item.key)}
+                                >
+                                    <Ionicons name={item.icon} size={20} color={GlobalColors.WHITE} />
+                                    <Text style={s.drawerItemText}>{item.label}</Text>
+                                </TouchableOpacity>
+                            )
+                        )}
+
+                        <View style={s.drawerDivider} />
+
+                        <TouchableOpacity style={s.drawerItem} onPress={handleAdminPress}>
+                            <Ionicons
+                                name={adminUser ? "grid-outline" : "log-in-outline"}
+                                size={20}
+                                color={GlobalColors.ACCENT}
+                            />
+                            <Text style={[s.drawerItemText, { color: GlobalColors.ACCENT }]}>
+                                {adminUser ? "Painel Admin" : "Login Admin"}
+                            </Text>
+                        </TouchableOpacity>
+
+                        {adminUser && (
                             <TouchableOpacity
-                                key={item.key}
                                 style={s.drawerItem}
-                                onPress={() => scrollToSection(item.key)}
+                                onPress={() => {
+                                    closeDrawer();
+                                    setTimeout(() => handleLogout(), 300);
+                                }}
                             >
-                                <Ionicons
-                                    name={item.icon}
-                                    size={20}
-                                    color={GlobalColors.WHITE}
-                                />
-                                <Text style={s.drawerItemText}>
-                                    {item.label}
+                                <Ionicons name="log-out-outline" size={20} color="#FF6B6B" />
+                                <Text style={[s.drawerItemText, { color: "#FF6B6B" }]}>
+                                    Sair
                                 </Text>
                             </TouchableOpacity>
-                        ))}
+                        )}
                     </Animated.View>
                 </View>
             )}
@@ -364,6 +460,12 @@ const s = StyleSheet.create({
         color: GlobalColors.WHITE,
         lineHeight: 22,
     },
+    drawerDivider: {
+        height: 1,
+        backgroundColor: "rgba(255,255,255,0.15)",
+        marginHorizontal: 20,
+        marginVertical: 10,
+    },
     drawerItem: {
         flexDirection: "row",
         alignItems: "center",
@@ -374,5 +476,24 @@ const s = StyleSheet.create({
         fontSize: 15,
         color: GlobalColors.WHITE,
         marginLeft: 15,
+    },
+    subMenu: {
+        paddingLeft: 55,
+    },
+    subMenuItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 10,
+    },
+    subMenuDot: {
+        width: 5,
+        height: 5,
+        borderRadius: 3,
+        backgroundColor: "rgba(255,255,255,0.4)",
+        marginRight: 10,
+    },
+    subMenuText: {
+        fontSize: 13,
+        color: "rgba(255,255,255,0.8)",
     },
 });

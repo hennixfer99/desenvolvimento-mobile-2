@@ -8,12 +8,15 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "server": "cd server && npm install && node index.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~54.0.33",
     "expo-constants": "~18.0.13",
+    "expo-file-system": "~19.0.23",
     "expo-font": "~14.0.11",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
@@ -22,7 +25,8 @@
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-safe-area-context": "~5.6.0",
-    "react-native-web": "~0.21.0"
+    "react-native-web": "~0.21.0",
+    "react-native-webview": "~13.12.0"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
