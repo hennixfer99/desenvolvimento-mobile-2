@@ -23,6 +23,24 @@ async function authHeaders() {
     };
 }
 
+/**
+ * Tenta uma requisição ao servidor com timeout curto.
+ * Se o servidor responder, atualiza a flag serverOnline.
+ * Retorna a Response ou null se falhar.
+ */
+async function tryFetch(url, options = {}) {
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timeout);
+        serverOnline = true;
+        return res;
+    } catch {
+        return null;
+    }
+}
+
 // ─── HELPERS: LOCAL (FALLBACK) ──────────────────────
 
 async function readLocal() {
@@ -62,23 +80,22 @@ export const initApi = async () => {
 // ─── AUTH ────────────────────────────────────────────
 
 export const login = async (username, password) => {
-    // Tenta servidor
-    if (serverOnline) {
+    // Sempre tenta servidor primeiro (independente da flag)
+    const res = await tryFetch(`${API_BASE}/api/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+    });
+    if (res) {
         try {
-            const res = await fetch(`${API_BASE}/api/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password }),
-            });
             const data = await res.json();
             if (!res.ok) return { success: false, error: data.error };
             await AsyncStorage.setItem(TOKEN_KEY, data.token);
             await AsyncStorage.setItem(USER_KEY, JSON.stringify(data.user));
             return { success: true, user: data.user };
-        } catch {
-            // servidor caiu no meio, tenta local
-        }
+        } catch { /* servidor respondeu mal, cai pro local */ }
     }
+
     // Fallback local
     try {
         const db = await readLocal();
@@ -100,12 +117,11 @@ export const login = async (username, password) => {
 };
 
 export const logout = async () => {
-    if (serverOnline) {
-        try {
-            const headers = await authHeaders();
-            await fetch(`${API_BASE}/api/logout`, { method: "POST", headers });
-        } catch { /* ignora */ }
-    } else {
+    // Tenta servidor
+    const headers = await authHeaders();
+    const res = await tryFetch(`${API_BASE}/api/logout`, { method: "POST", headers });
+    if (!res) {
+        // Fallback local
         try {
             const token = await getToken();
             if (token) {
@@ -122,10 +138,12 @@ export const logout = async () => {
 export const getSession = async () => {
     const token = await getToken();
     if (!token) return null;
-    if (serverOnline) {
+
+    // Sempre tenta servidor primeiro
+    const headers = await authHeaders();
+    const res = await tryFetch(`${API_BASE}/api/me`, { headers });
+    if (res) {
         try {
-            const headers = await authHeaders();
-            const res = await fetch(`${API_BASE}/api/me`, { headers });
             if (!res.ok) {
                 await AsyncStorage.removeItem(TOKEN_KEY);
                 await AsyncStorage.removeItem(USER_KEY);
@@ -135,6 +153,8 @@ export const getSession = async () => {
             return data.user;
         } catch { /* cai pro local */ }
     }
+
+    // Fallback local
     try {
         const db = await readLocal();
         const session = db.sessions.find((s) => s.token === token);
@@ -152,13 +172,14 @@ export const getSession = async () => {
 // ─── SUBMISSIONS (CRUD) ────────────────────────────
 
 export const getSubmissions = async () => {
-    if (serverOnline) {
-        try {
-            const headers = await authHeaders();
-            const res = await fetch(`${API_BASE}/api/submissions`, { headers });
-            if (res.ok) return await res.json();
-        } catch { /* cai pro local */ }
+    // Sempre tenta o servidor primeiro (resolve race condition com initApi)
+    const headers = await authHeaders();
+    const res = await tryFetch(`${API_BASE}/api/submissions`, { headers });
+    if (res && res.ok) {
+        try { return await res.json(); } catch {}
     }
+
+    // Fallback local
     try {
         const db = await readLocal();
         return db.submissions || [];
@@ -168,16 +189,17 @@ export const getSubmissions = async () => {
 };
 
 export const addSubmission = async (submission) => {
-    if (serverOnline) {
-        try {
-            const res = await fetch(`${API_BASE}/api/submissions`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(submission),
-            });
-            if (res.ok) return await res.json();
-        } catch { /* cai pro local */ }
+    // Sempre tenta o servidor primeiro
+    const res = await tryFetch(`${API_BASE}/api/submissions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submission),
+    });
+    if (res && res.ok) {
+        try { return await res.json(); } catch {}
     }
+
+    // Fallback local
     try {
         const db = await readLocal();
         const newSub = {
@@ -195,17 +217,18 @@ export const addSubmission = async (submission) => {
 };
 
 export const updateSubmission = async (id, updates) => {
-    if (serverOnline) {
-        try {
-            const headers = await authHeaders();
-            const res = await fetch(`${API_BASE}/api/submissions/${id}`, {
-                method: "PUT",
-                headers,
-                body: JSON.stringify(updates),
-            });
-            if (res.ok) return { success: true, submission: await res.json() };
-        } catch { /* cai pro local */ }
+    // Sempre tenta o servidor primeiro
+    const headers = await authHeaders();
+    const res = await tryFetch(`${API_BASE}/api/submissions/${id}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify(updates),
+    });
+    if (res && res.ok) {
+        try { return { success: true, submission: await res.json() }; } catch {}
     }
+
+    // Fallback local
     try {
         const db = await readLocal();
         const index = db.submissions.findIndex((s) => s.id === id);
@@ -219,16 +242,17 @@ export const updateSubmission = async (id, updates) => {
 };
 
 export const deleteSubmission = async (id) => {
-    if (serverOnline) {
-        try {
-            const headers = await authHeaders();
-            const res = await fetch(`${API_BASE}/api/submissions/${id}`, {
-                method: "DELETE",
-                headers,
-            });
-            if (res.ok) return { success: true };
-        } catch { /* cai pro local */ }
+    // Sempre tenta o servidor primeiro
+    const headers = await authHeaders();
+    const res = await tryFetch(`${API_BASE}/api/submissions/${id}`, {
+        method: "DELETE",
+        headers,
+    });
+    if (res && res.ok) {
+        return { success: true };
     }
+
+    // Fallback local
     try {
         const db = await readLocal();
         const before = db.submissions.length;

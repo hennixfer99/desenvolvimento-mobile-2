@@ -101,13 +101,30 @@ export default function App() {
     };
 
     const scrollToSection = (key) => {
-        if (sectionPositions.current[key] !== undefined) {
-            scrollRef.current?.scrollTo({
-                y: sectionPositions.current[key],
-                animated: true,
-            });
-        }
+        const needsReturn = !!(detailPage || showLogin || showAdmin);
+
+        // Fecha o drawer primeiro
         if (drawerOpen) closeDrawer();
+
+        // Se estava em outra tela, volta para a home
+        if (needsReturn) {
+            setDetailPage(null);
+            setShowLogin(false);
+            setShowAdmin(false);
+        }
+
+        // Aguarda a home renderizar (se voltou) e o drawer fechar
+        const delay = needsReturn ? 400 : 100;
+        setTimeout(() => {
+            if (key === "Home") {
+                scrollRef.current?.scrollTo({ y: 0, animated: true });
+            } else if (sectionPositions.current[key] !== undefined) {
+                scrollRef.current?.scrollTo({
+                    y: sectionPositions.current[key],
+                    animated: true,
+                });
+            }
+        }, delay);
     };
 
     const navigateToDetail = (pageKey) => {
@@ -159,6 +176,21 @@ export default function App() {
     const isMainView = !detailPage && !showLogin && !showAdmin;
     const isDetailView = detailPage && !showLogin && !showAdmin;
 
+    /* Função de voltar correta para cada tela */
+    const handleBack = () => {
+        if (showLogin || showAdmin) return goBackFromAdmin();
+        if (detailPage) return goBack();
+    };
+
+    /* Título do header para telas internas */
+    const headerTitle = showLogin
+        ? "Login"
+        : showAdmin
+        ? "Painel Admin"
+        : detailPage
+        ? DETAIL_PAGES[detailPage]?.title || ""
+        : "";
+
     return (
         <View style={s.rootContainer}>
             <SafeAreaView style={s.container}>
@@ -167,85 +199,80 @@ export default function App() {
                     backgroundColor={GlobalColors.PRIMARY_DARK}
                 />
 
-                {showLogin ? (
-                    <View style={s.detailContainer}>
-                        <View style={s.detailHeader}>
-                            <TouchableOpacity onPress={goBackFromAdmin} style={s.headerSideButton}>
-                                <Ionicons name="arrow-back" size={24} color={GlobalColors.WHITE} />
-                            </TouchableOpacity>
-                            <Text style={s.detailHeaderTitle}>Login</Text>
-                            <View style={s.headerSideButton} />
+                {/* ─── HEADER UNIFICADO (nunca desmonta) ─── */}
+                <View style={[s.header, !isMainView && s.headerInner]}>
+                    {/* Esquerda: logo ou botão voltar */}
+                    {isMainView ? (
+                        <View style={s.headerLogo}>
+                            <Image
+                                source={imperialLogo}
+                                style={s.logoImage}
+                                resizeMode="contain"
+                            />
                         </View>
+                    ) : (
+                        <TouchableOpacity onPress={handleBack} style={s.headerSideButton}>
+                            <Ionicons name="arrow-back" size={24} color={GlobalColors.WHITE} />
+                        </TouchableOpacity>
+                    )}
+
+                    {/* Centro: título ou espaçador */}
+                    {isMainView ? (
+                        <View style={s.headerSpacer} />
+                    ) : (
+                        <Text style={s.detailHeaderTitle} numberOfLines={1}>
+                            {headerTitle}
+                        </Text>
+                    )}
+
+                    {/* Direita: menu hamburger ou espaço vazio */}
+                    {(isMainView || isDetailView) ? (
+                        <TouchableOpacity
+                            onPress={toggleDrawer}
+                            style={isMainView ? s.menuButton : s.headerSideButton}
+                        >
+                            <Ionicons
+                                name="menu"
+                                size={isMainView ? 28 : 24}
+                                color={GlobalColors.WHITE}
+                            />
+                        </TouchableOpacity>
+                    ) : (
+                        <View style={s.headerSideButton} />
+                    )}
+                </View>
+
+                {/* ─── CONTEÚDO ─── */}
+                {showLogin ? (
+                    <View style={s.contentArea}>
                         <LoginScreen onLoginSuccess={handleLoginSuccess} />
                     </View>
                 ) : showAdmin ? (
-                    <View style={s.detailContainer}>
-                        <View style={s.detailHeader}>
-                            <TouchableOpacity onPress={goBackFromAdmin} style={s.headerSideButton}>
-                                <Ionicons name="arrow-back" size={24} color={GlobalColors.WHITE} />
-                            </TouchableOpacity>
-                            <Text style={s.detailHeaderTitle}>Painel Admin</Text>
-                            <View style={s.headerSideButton} />
-                        </View>
+                    <View style={s.contentArea}>
                         <AdminScreen user={adminUser} onLogout={handleLogout} />
                     </View>
                 ) : isDetailView ? (
-                    <View style={s.detailContainer}>
-                        <View style={s.detailHeader}>
-                            <TouchableOpacity onPress={goBack} style={s.headerSideButton}>
-                                <Ionicons name="arrow-back" size={24} color={GlobalColors.WHITE} />
-                            </TouchableOpacity>
-                            <Text style={s.detailHeaderTitle} numberOfLines={1}>
-                                {DETAIL_PAGES[detailPage].title}
-                            </Text>
-                            <TouchableOpacity onPress={toggleDrawer} style={s.headerSideButton}>
-                                <Ionicons name="menu" size={24} color={GlobalColors.WHITE} />
-                            </TouchableOpacity>
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        style={s.detailScroll}
+                        contentContainerStyle={s.detailScrollContent}
+                    >
+                        <View>
+                            {detailPage === "Inspecoes" && <InspecoesDetailScreen />}
+                            {detailPage === "Projetos" && <ProjetosDetailScreen />}
+                            {detailPage === "Manutencao" && <ManutencaoDetailScreen />}
+                            {detailPage === "Treinamentos" && <TreinamentosDetailScreen />}
                         </View>
-                        <ScrollView
-                            showsVerticalScrollIndicator={false}
-                            style={s.detailScroll}
-                            contentContainerStyle={s.detailScrollContent}
-                        >
-                            <View>
-                                {detailPage === "Inspecoes" && <InspecoesDetailScreen />}
-                                {detailPage === "Projetos" && <ProjetosDetailScreen />}
-                                {detailPage === "Manutencao" && <ManutencaoDetailScreen />}
-                                {detailPage === "Treinamentos" && <TreinamentosDetailScreen />}
-                            </View>
-                            <Footer />
-                        </ScrollView>
-                    </View>
+                        <Footer />
+                    </ScrollView>
                 ) : (
-                    <>
-                        <View style={s.header}>
-                            <View style={s.headerLogo}>
-                                <Image
-                                    source={imperialLogo}
-                                    style={s.logoImage}
-                                    resizeMode="contain"
-                                />
-                            </View>
-                            <View style={s.headerSpacer} />
-                            <TouchableOpacity
-                                onPress={toggleDrawer}
-                                style={s.menuButton}
-                            >
-                                <Ionicons
-                                    name="menu"
-                                    size={28}
-                                    color={GlobalColors.WHITE}
-                                />
-                            </TouchableOpacity>
-                        </View>
-                        <Routes
-                            scrollRef={scrollRef}
-                            onSectionLayout={registerSection}
-                            scrollToSection={scrollToSection}
-                            navigateToDetail={navigateToDetail}
-                            onScroll={handleScroll}
-                        />
-                    </>
+                    <Routes
+                        scrollRef={scrollRef}
+                        onSectionLayout={registerSection}
+                        scrollToSection={scrollToSection}
+                        navigateToDetail={navigateToDetail}
+                        onScroll={handleScroll}
+                    />
                 )}
             </SafeAreaView>
 
@@ -393,16 +420,13 @@ const s = StyleSheet.create({
     menuButton: {
         padding: 5,
     },
-    detailContainer: {
-        flex: 1,
-        backgroundColor: GlobalColors.BACKGROUND,
-    },
-    detailHeader: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: GlobalColors.PRIMARY_DARK,
+    headerInner: {
         paddingHorizontal: 10,
         paddingVertical: 12,
+    },
+    contentArea: {
+        flex: 1,
+        backgroundColor: GlobalColors.BACKGROUND,
     },
     headerSideButton: {
         width: 40,
