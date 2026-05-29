@@ -6,7 +6,6 @@ const path = require("path");
 const app = express();
 const PORT = 3001;
 
-// Aponta para database/db.json — o mesmo arquivo que o projeto carrega como seed
 const DB_PATH = path.join(__dirname, "..", "database", "db.json");
 
 app.use(cors());
@@ -35,13 +34,9 @@ function auth(req, res, next) {
     next();
 }
 
-// ─── HEALTH CHECK ───────────────────────────────────
-
 app.get("/api/ping", (_req, res) => {
     res.json({ ok: true });
 });
-
-// ─── AUTH ────────────────────────────────────────────
 
 app.post("/api/login", (req, res) => {
     const { username, password } = req.body;
@@ -72,8 +67,6 @@ app.post("/api/logout", auth, (req, res) => {
 app.get("/api/me", auth, (req, res) => {
     res.json({ user: { userId: req.user.userId, username: req.user.username, role: req.user.role } });
 });
-
-// ─── SUBMISSIONS ────────────────────────────────────
 
 app.get("/api/submissions", auth, (req, res) => {
     const db = readDb();
@@ -113,9 +106,8 @@ app.delete("/api/submissions/:id", auth, (req, res) => {
     res.json({ success: true });
 });
 
-// ─── START ──────────────────────────────────────────
-
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Imperial API rodando em http://0.0.0.0:${PORT}`);
     console.log(`Banco: ${DB_PATH}`);
 });
+

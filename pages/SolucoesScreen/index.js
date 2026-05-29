@@ -7,13 +7,11 @@ import SectionTitle from "../../components/SectionTitle";
 import ServiceCard from "../../components/ServiceCard";
 import { GlobalColors } from "../../constants/colors";
 
-/* ─── WebView — só importa no nativo ────────────────── */
 let WebView = null;
 if (Platform.OS !== "web") {
     try { WebView = require("react-native-webview").WebView; } catch {}
 }
 
-/* ─── Soluções ──────────────────────────────────────── */
 const SOLUTIONS = [
     {
         icon: "search",
@@ -40,12 +38,10 @@ const SOLUTIONS = [
     },
 ];
 
-/* ── Coordenadas do escritório ─────────────────────── */
 const OFFICE_LAT = -24.0058;
 const OFFICE_LNG = -46.4028;
 const MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${OFFICE_LAT},${OFFICE_LNG}`;
 
-/* ── HTML Leaflet + OpenStreetMap ───────────────────── */
 const MAP_HTML = `<!DOCTYPE html>
 <html><head>
 <meta charset="utf-8"/>
@@ -72,14 +68,12 @@ L.marker([${OFFICE_LAT},${OFFICE_LNG}]).addTo(map)
 </script>
 </body></html>`;
 
-/* ── Componente Mapa ───────────────────────────────── */
 function OfficeMap() {
     const isWeb = Platform.OS === "web";
     const hasWebView = !isWeb && WebView;
 
     return (
         <View style={s.mapCard}>
-            {/* ── Mapa visual ── */}
             <View style={s.mapContainer}>
                 {hasWebView ? (
                     <WebView
@@ -104,7 +98,6 @@ function OfficeMap() {
                 )}
             </View>
 
-            {/* ── Rodapé: endereço + botão ── */}
             <View style={s.mapFooter}>
                 <View style={s.footerInfo}>
                     <Ionicons name="location-sharp" size={22} color={GlobalColors.PRIMARY} />
@@ -128,7 +121,6 @@ function OfficeMap() {
     );
 }
 
-/* ── Tela Principal ────────────────────────────────── */
 export default function SolucoesScreen() {
     return (
         <View style={s.container}>
@@ -155,7 +147,6 @@ export default function SolucoesScreen() {
     );
 }
 
-/* ── Estilos ───────────────────────────────────────── */
 const s = StyleSheet.create({
     container: {
         backgroundColor: GlobalColors.WHITE,
@@ -180,7 +171,7 @@ const s = StyleSheet.create({
         textAlign: "center",
         marginBottom: 20,
     },
-    /* ── Card do mapa ── */
+
     mapCard: {
         borderRadius: 12,
         overflow: "hidden",
@@ -210,7 +201,7 @@ const s = StyleSheet.create({
         fontSize: 13,
         marginTop: 8,
     },
-    /* ── Rodapé do mapa ── */
+
     mapFooter: {
         flexDirection: "row",
         alignItems: "center",
@@ -255,3 +246,4 @@ const s = StyleSheet.create({
         fontSize: 13,
     },
 });
+

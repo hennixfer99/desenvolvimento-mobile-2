@@ -103,17 +103,14 @@ export default function App() {
     const scrollToSection = (key) => {
         const needsReturn = !!(detailPage || showLogin || showAdmin);
 
-        // Fecha o drawer primeiro
         if (drawerOpen) closeDrawer();
 
-        // Se estava em outra tela, volta para a home
         if (needsReturn) {
             setDetailPage(null);
             setShowLogin(false);
             setShowAdmin(false);
         }
 
-        // Aguarda a home renderizar (se voltou) e o drawer fechar
         const delay = needsReturn ? 400 : 100;
         setTimeout(() => {
             if (key === "Home") {
@@ -176,13 +173,11 @@ export default function App() {
     const isMainView = !detailPage && !showLogin && !showAdmin;
     const isDetailView = detailPage && !showLogin && !showAdmin;
 
-    /* Função de voltar correta para cada tela */
     const handleBack = () => {
         if (showLogin || showAdmin) return goBackFromAdmin();
         if (detailPage) return goBack();
     };
 
-    /* Título do header para telas internas */
     const headerTitle = showLogin
         ? "Login"
         : showAdmin
@@ -199,9 +194,7 @@ export default function App() {
                     backgroundColor={GlobalColors.PRIMARY_DARK}
                 />
 
-                {/* ─── HEADER UNIFICADO (nunca desmonta) ─── */}
                 <View style={[s.header, !isMainView && s.headerInner]}>
-                    {/* Esquerda: logo ou botão voltar */}
                     {isMainView ? (
                         <View style={s.headerLogo}>
                             <Image
@@ -216,7 +209,6 @@ export default function App() {
                         </TouchableOpacity>
                     )}
 
-                    {/* Centro: título ou espaçador */}
                     {isMainView ? (
                         <View style={s.headerSpacer} />
                     ) : (
@@ -225,7 +217,6 @@ export default function App() {
                         </Text>
                     )}
 
-                    {/* Direita: menu hamburger ou espaço vazio */}
                     {(isMainView || isDetailView) ? (
                         <TouchableOpacity
                             onPress={toggleDrawer}
@@ -242,7 +233,6 @@ export default function App() {
                     )}
                 </View>
 
-                {/* ─── CONTEÚDO ─── */}
                 {showLogin ? (
                     <View style={s.contentArea}>
                         <LoginScreen onLoginSuccess={handleLoginSuccess} />
@@ -521,3 +511,4 @@ const s = StyleSheet.create({
         color: "rgba(255,255,255,0.8)",
     },
 });
+

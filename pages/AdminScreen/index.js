@@ -222,7 +222,6 @@ export default function AdminScreen({ user, onLogout }) {
                 showsVerticalScrollIndicator={false}
             />
 
-            {/* Modal de Edição */}
             <Modal visible={editItem !== null} transparent animationType="slide">
                 <View style={s.modalOverlay}>
                     <ScrollView contentContainerStyle={s.modalScrollContent}>
@@ -305,7 +304,6 @@ export default function AdminScreen({ user, onLogout }) {
                 </View>
             </Modal>
 
-            {/* Modal de Confirmação de Exclusão */}
             <Modal visible={deleteTarget !== null} transparent animationType="fade">
                 <View style={s.confirmOverlay}>
                     <View style={s.confirmCard}>
@@ -548,7 +546,6 @@ const s = StyleSheet.create({
         marginTop: 8,
         lineHeight: 20,
     },
-    // ─── Modal de Edição ────────────────────────────
     modalOverlay: {
         flex: 1,
         backgroundColor: "rgba(0,0,0,0.5)",
@@ -634,7 +631,7 @@ const s = StyleSheet.create({
         fontSize: 15,
         fontWeight: "bold",
     },
-    // ─── Modal de Confirmação de Exclusão ────────────
+
     confirmOverlay: {
         flex: 1,
         backgroundColor: "rgba(0,0,0,0.5)",
@@ -705,3 +702,4 @@ const s = StyleSheet.create({
         color: GlobalColors.WHITE,
     },
 });
+
